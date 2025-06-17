@@ -1,0 +1,208 @@
+# frozen_string_literal: true
+
+require 'dotenv/load'
+require 'sequel'
+
+namespace :db do
+  desc 'Create database'
+  task :create do
+    db_name = ENV.fetch('DATABASE_URL', 'postgresql://localhost/sinatra_api_development').split('/').last
+    system_db_url = ENV.fetch('DATABASE_URL', 'postgresql://localhost/sinatra_api_development').gsub("/#{db_name}", '/postgres')
+    
+    begin
+      db = Sequel.connect(system_db_url)
+      db.run("CREATE DATABASE #{db_name}")
+      puts "Database '#{db_name}' created successfully!"
+    rescue Sequel::DatabaseError => e
+      puts "Error creating database: #{e.message}"
+    ensure
+      db&.disconnect
+    end
+  end
+
+  desc 'Drop database'
+  task :drop do
+    db_name = ENV.fetch('DATABASE_URL', 'postgresql://localhost/sinatra_api_development').split('/').last
+    system_db_url = ENV.fetch('DATABASE_URL', 'postgresql://localhost/sinatra_api_development').gsub("/#{db_name}", '/postgres')
+    
+    begin
+      db = Sequel.connect(system_db_url)
+      db.run("DROP DATABASE IF EXISTS #{db_name}")
+      puts "Database '#{db_name}' dropped successfully!"
+    rescue Sequel::DatabaseError => e
+      puts "Error dropping database: #{e.message}"
+    ensure
+      db&.disconnect
+    end
+  end
+
+  desc 'Run database migrations'
+  task :migrate do
+    require_relative 'config/database'
+    Sequel.extension :migration
+    
+    migrations_dir = File.join(__dir__, 'db', 'migrations')
+    
+    if Dir.exist?(migrations_dir) && !Dir.empty?(migrations_dir)
+      Sequel::Migrator.run(DB, migrations_dir)
+      puts 'Migrations completed successfully!'
+    else
+      puts 'No migrations found.'
+    end
+  end
+
+  desc 'Rollback database migration'
+  task :rollback do
+    require_relative 'config/database'
+    Sequel.extension :migration
+    
+    migrations_dir = File.join(__dir__, 'db', 'migrations')
+    current_version = DB[:schema_migrations].max(:filename).to_i rescue 0
+    
+    if current_version > 0
+      target_version = current_version - 1
+      Sequel::Migrator.run(DB, migrations_dir, target: target_version)
+      puts "Rolled back to migration #{target_version}"
+    else
+      puts 'No migrations to rollback.'
+    end
+  end
+
+  desc 'Seed database with sample data'
+  task :seed do
+    require_relative 'config/application'
+    
+    seeds_file = File.join(__dir__, 'db', 'seeds.rb')
+    if File.exist?(seeds_file)
+      load seeds_file
+      puts 'Database seeded successfully!'
+    else
+      puts 'No seeds file found.'
+    end
+  end
+
+  desc 'Reset database (drop, create, migrate, seed)'
+  task :reset do
+    Rake::Task['db:drop'].invoke
+    Rake::Task['db:create'].invoke
+    Rake::Task['db:migrate'].invoke
+    Rake::Task['db:seed'].invoke
+  end
+
+  desc 'Create a new migration'
+  task :create_migration, [:name] do |t, args|
+    if args[:name].nil?
+      puts 'Please provide a migration name: rake db:create_migration[migration_name]'
+      exit 1
+    end
+    
+    migrations_dir = File.join(__dir__, 'db', 'migrations')
+    FileUtils.mkdir_p(migrations_dir) unless Dir.exist?(migrations_dir)
+    
+    timestamp = Time.now.strftime('%Y%m%d%H%M%S')
+    filename = "#{timestamp}_#{args[:name].downcase.gsub(/\s+/, '_')}.rb"
+    filepath = File.join(migrations_dir, filename)
+    
+    migration_template = <<~RUBY
+      # frozen_string_literal: true
+
+      Sequel.migration do
+        up do
+          # Add your up migration code here
+        end
+
+        down do
+          # Add your down migration code here
+        end
+      end
+    RUBY
+    
+    File.write(filepath, migration_template)
+    puts "Created migration: #{filepath}"
+  end
+
+  desc 'Show migration status'
+  task :status do
+    require_relative 'config/database'
+    
+    migrations_dir = File.join(__dir__, 'db', 'migrations')
+    return puts 'No migrations directory found.' unless Dir.exist?(migrations_dir)
+    
+    migration_files = Dir[File.join(migrations_dir, '*.rb')].sort
+    return puts 'No migrations found.' if migration_files.empty?
+    
+    applied_migrations = begin
+      DB[:schema_migrations].select_map(:filename)
+    rescue Sequel::DatabaseError
+      []
+    end
+    
+    puts "\nMigration Status:"
+    puts "#{'-' * 50}"
+    
+    migration_files.each do |file|
+      filename = File.basename(file)
+      status = applied_migrations.include?(filename) ? 'Applied' : 'Pending'
+      puts "#{status.ljust(10)} #{filename}"
+    end
+    
+    puts "#{'-' * 50}"
+    puts "Total: #{migration_files.length} migrations"
+    puts "Applied: #{applied_migrations.length} migrations"
+    puts "Pending: #{migration_files.length - applied_migrations.length} migrations"
+  end
+end
+
+namespace :test do
+  desc 'Run all tests'
+  task :run do
+    system('bundle exec rspec')
+  end
+  
+  desc 'Run tests with coverage'
+  task :coverage do
+    ENV['COVERAGE'] = 'true'
+    system('bundle exec rspec')
+  end
+end
+
+namespace :security do
+  desc 'Run security audit'
+  task :audit do
+    system('bundle exec bundle-audit check --update')
+    system('bundle exec brakeman -q')
+  end
+end
+
+namespace :lint do
+  desc 'Run RuboCop linter'
+  task :run do
+    system('bundle exec rubocop')
+  end
+  
+  desc 'Auto-correct RuboCop offenses'
+  task :fix do
+    system('bundle exec rubocop -a')
+  end
+end
+
+desc 'Start development server'
+task :server do
+  system('bundle exec rerun rackup')
+end
+
+desc 'Start console'
+task :console do
+  require_relative 'config/application'
+  require 'irb'
+  ARGV.clear
+  IRB.start
+end
+
+desc 'Show available tasks'
+task :help do
+  system('rake -T')
+end
+
+# Default task
+task default: ['test:run'] 

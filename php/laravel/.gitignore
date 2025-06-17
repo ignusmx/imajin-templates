@@ -1,0 +1,65 @@
+# Laravel framework files
+/vendor/
+/node_modules/
+/public/hot
+/public/storage
+/storage/*.key
+/storage/debugbar
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+/storage/logs/*.log
+
+# Database
+*.sqlite
+*.sqlite-journal
+
+# Testing
+/coverage/
+/reports/
+
+# Cache
+/bootstrap/cache/*
+!/bootstrap/cache/.gitkeep
+/storage/framework/cache/*
+!/storage/framework/cache/.gitkeep
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitkeep
+/storage/framework/views/*
+!/storage/framework/views/.gitkeep
+
+# Temporary files
+/tmp/
+/temp/
+
+# Build artifacts
+/public/build/
+/public/mix-manifest.json
+
+# Docker override
+docker-compose.override.yml 

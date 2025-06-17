@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for Laravel Docker Template */
+body {
+    font-family: 'Inter', sans-serif;
+} 

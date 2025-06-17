@@ -1,0 +1,324 @@
+# 🚀 **Imajin Templates - Cursor Code Generation Rules**
+
+## **1. Template Creation Standards**
+
+### **1.1 Docker-First Development**
+✅ **ALL templates MUST use Docker for development** - No exceptions.  
+✅ **Port 3000 standardization** - All templates expose their main service on port 3000.  
+✅ **Multi-stage Dockerfiles** - Separate development and production stages.  
+✅ **Docker Compose for development** - Include all services (app, database, cache, etc.).  
+✅ **Volume mounts for hot reload** - Enable live code reloading in development.  
+
+### **1.2 Required Template Structure**
+```
+template-name/
+├── README.md                    # Comprehensive setup guide
+├── .env.example                # All environment variables documented
+├── .gitignore                  # Framework-specific patterns
+├── Dockerfile                  # Multi-stage (dev + prod)
+├── docker-compose.yml          # Development environment
+├── docker-compose.prod.yml     # Production environment (optional)
+├── .dockerignore              # Docker build optimization
+├── scripts/
+│   ├── setup.sh               # Automated setup script
+│   ├── dev.sh                 # Development startup script
+│   └── test.sh                # Testing script
+├── .github/
+│   └── workflows/
+│       ├── ci.yml             # Continuous integration
+│       └── cd.yml             # Continuous deployment
+└── docs/
+    ├── DEVELOPMENT.md         # Development guide
+    ├── DEPLOYMENT.md          # Production deployment
+    └── ARCHITECTURE.md        # Design decisions
+```
+
+### **1.3 Docker Configuration Requirements**
+✅ **Development Dockerfile stage**:
+   - Use official base images (node:18-alpine, ruby:3.2-alpine, etc.)
+   - Install development dependencies
+   - Configure hot reload/live reloading
+   - Set up debugging capabilities
+   
+✅ **Production Dockerfile stage**:
+   - Multi-stage build for optimization
+   - Remove development dependencies
+   - Use non-root user for security
+   - Implement health checks
+
+✅ **Docker Compose requirements**:
+   - Main app service on port 3000
+   - Database service (PostgreSQL preferred)
+   - Cache service (Redis) when applicable
+   - Volume mounts for development
+   - Environment variable configuration
+   - Restart policies
+
+---
+
+## **2. Language-Specific Template Rules**
+
+### **2.1 Ruby Templates (Rails/Sinatra)**
+✅ **Ruby version**: Use Ruby 3.2+ with Alpine Linux base image.  
+✅ **Database**: PostgreSQL as default, with database.yml configured for Docker.  
+✅ **Cache**: Redis integration for session/cache storage.  
+✅ **Asset pipeline**: Configured for Docker environment.  
+✅ **Testing**: RSpec with Factory Bot, database cleaner setup.  
+✅ **Gems**: Include essential gems (rubocop, brakeman, bullet, etc.).  
+
+**Docker Compose example for Ruby**:
+```yaml
+services:
+  app:
+    build: 
+      context: .
+      target: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - bundle_cache:/usr/local/bundle
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@db:5432/app_development
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+    command: rails server -b 0.0.0.0 -p 3000
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: app_development
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
+  bundle_cache:
+```
+
+### **2.2 Node.js Templates (Next.js, Express)**
+✅ **Node version**: Use Node 20+ with Alpine Linux base image.  
+✅ **Package manager**: Use npm or pnpm consistently.  
+✅ **TypeScript**: Default to TypeScript for all Node.js templates.  
+✅ **Database**: PostgreSQL with Prisma/Drizzle ORM.  
+✅ **Testing**: Jest + Testing Library setup.  
+✅ **Linting**: ESLint + Prettier configured.  
+
+### **2.3 Python Templates (Django, FastAPI)**
+✅ **Python version**: Use Python 3.11+ with Alpine Linux base image.  
+✅ **Package management**: Use Poetry or pip with requirements.txt.  
+✅ **Database**: PostgreSQL with SQLAlchemy/Django ORM.  
+✅ **Testing**: pytest with fixtures and factories.  
+✅ **Linting**: Black, flake8, mypy configured.  
+
+### **2.4 Go Templates (Gin, Echo)**
+✅ **Go version**: Use Go 1.21+ with Alpine Linux base image.  
+✅ **Dependency management**: Use Go modules.  
+✅ **Database**: PostgreSQL with sqlx or GORM.  
+✅ **Testing**: Standard testing package + testify.  
+✅ **Linting**: golangci-lint configured.  
+
+---
+
+## **3. Development Workflow Standards**
+
+### **3.1 Quick Start Commands**
+Every template MUST provide these commands:
+```bash
+# Setup and start development environment
+./scripts/setup.sh
+./scripts/dev.sh
+
+# Alternative Docker Compose commands
+docker-compose up --build
+docker-compose exec app [command]
+```
+
+### **3.2 Environment Variables**
+✅ **Comprehensive .env.example** - Document ALL environment variables.  
+✅ **Docker-friendly defaults** - Variables should work in containerized environment.  
+✅ **Security considerations** - No secrets in defaults, use placeholder values.  
+
+### **3.3 Database Management**
+✅ **Database initialization** - Automated setup scripts.  
+✅ **Migrations** - Framework-appropriate migration system.  
+✅ **Seed data** - Example data for development.  
+✅ **Reset scripts** - Easy database reset for development.  
+
+---
+
+## **4. Testing & Quality Standards**
+
+### **4.1 Testing Requirements**
+✅ **Unit tests** - Core business logic coverage.  
+✅ **Integration tests** - API endpoint testing.  
+✅ **Docker test environment** - Tests run in containers.  
+✅ **CI/CD integration** - Automated testing in GitHub Actions.  
+
+### **4.2 Code Quality**
+✅ **Linting configuration** - Language-appropriate linters.  
+✅ **Code formatting** - Consistent formatting rules.  
+✅ **Pre-commit hooks** - Quality checks before commits.  
+✅ **Security scanning** - Vulnerability detection tools.  
+
+---
+
+## **5. Documentation Standards**
+
+### **5.1 README Template Structure**
+```markdown
+# [Template Name]
+
+## 🎯 Overview
+Brief description and use cases
+
+## 📋 Prerequisites
+- Docker & Docker Compose
+- Git
+
+## ⚡ Quick Start
+```bash
+git clone [template]
+cd [template]
+./scripts/setup.sh
+./scripts/dev.sh
+```
+Open http://localhost:3000
+
+## 🔧 Development
+Detailed development instructions
+
+## 📁 Project Structure
+Key directories and files explained
+
+## 🛠️ Available Scripts
+All scripts documented
+
+## 🧪 Testing
+Testing instructions
+
+## 🚀 Deployment
+Production deployment guide
+```
+
+### **5.2 Documentation Requirements**
+✅ **Step-by-step setup** - Assume no prior knowledge.  
+✅ **Troubleshooting section** - Common issues and solutions.  
+✅ **Architecture decisions** - Explain design choices.  
+✅ **Performance considerations** - Optimization tips.  
+
+---
+
+## **6. Security & Production Standards**
+
+### **6.1 Security Defaults**
+✅ **Non-root Docker user** - Run containers with restricted permissions.  
+✅ **Health checks** - Container health monitoring.  
+✅ **Secrets management** - Proper environment variable handling.  
+✅ **CORS configuration** - Secure cross-origin settings.  
+
+### **6.2 Production Readiness**
+✅ **Logging configuration** - Structured logging setup.  
+✅ **Monitoring hooks** - Application performance monitoring.  
+✅ **Graceful shutdown** - Handle container stop signals.  
+✅ **Static file serving** - Optimized asset delivery.  
+
+---
+
+## **7. CI/CD Pipeline Standards**
+
+### **7.1 GitHub Actions Workflow**
+```yaml
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and test
+        run: |
+          docker-compose up -d
+          docker-compose exec -T app ./scripts/test.sh
+      - name: Cleanup
+        run: docker-compose down -v
+```
+
+### **7.2 Quality Gates**
+✅ **All tests pass** - No failing tests allowed.  
+✅ **Code coverage** - Minimum coverage thresholds.  
+✅ **Security scan** - No high-severity vulnerabilities.  
+✅ **Docker build** - Successful container builds.  
+
+---
+
+## **8. Template Maintenance**
+
+### **8.1 Version Management**
+✅ **Semantic versioning** - Use git tags for versions.  
+✅ **Changelog maintenance** - Document all changes.  
+✅ **Dependency updates** - Regular security updates.  
+✅ **Migration guides** - Help users upgrade between versions.  
+
+### **8.2 Community Standards**
+✅ **Issue templates** - Standardized bug reports and feature requests.  
+✅ **Contributing guide** - Clear contribution instructions.  
+✅ **Code of conduct** - Community behavior standards.  
+✅ **License clarity** - MIT license for all templates.  
+
+---
+
+## **9. Performance & Optimization**
+
+### **9.1 Docker Optimization**
+✅ **Multi-stage builds** - Minimize production image size.  
+✅ **Layer caching** - Optimize build times.  
+✅ **.dockerignore** - Exclude unnecessary files.  
+✅ **Base image selection** - Use appropriate minimal images.  
+
+### **9.2 Development Experience**
+✅ **Fast startup times** - Optimize container startup.  
+✅ **Hot reload** - Live code reloading in development.  
+✅ **Debug support** - Debugging capabilities configured.  
+✅ **IDE integration** - VS Code settings and extensions.  
+
+---
+
+## **10. Template Generation Commands**
+
+When creating new templates, use these standardized approaches:
+
+### **10.1 Template Creation Workflow**
+1. **Create directory structure**: `mkdir -p templates/[language]/[framework]`
+2. **Copy base template**: Use existing template as starting point
+3. **Configure Docker**: Set up Dockerfile and docker-compose.yml
+4. **Add scripts**: Create setup.sh, dev.sh, test.sh
+5. **Write documentation**: Complete README and docs/
+6. **Test thoroughly**: Verify complete setup process
+7. **Update main README**: Add template to available list
+
+### **10.2 Validation Checklist**
+- [ ] Template starts with `./scripts/setup.sh && ./scripts/dev.sh`
+- [ ] Application accessible on `http://localhost:3000`
+- [ ] All tests pass with `./scripts/test.sh`
+- [ ] Docker images build successfully
+- [ ] Documentation is complete and accurate
+- [ ] Security best practices implemented
+
+---
+
+**🎯 Remember: Every template should enable developers to go from `git clone` to running application in under 2 minutes with just Docker installed.** 

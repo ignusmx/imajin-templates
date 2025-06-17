@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+
+echo "Building Tailwind CSS..."
+bin/rails tailwindcss:build
+
+echo "Tailwind CSS built successfully. Keeping process alive..."
+sleep infinity 

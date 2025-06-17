@@ -1,0 +1,139 @@
+services:
+  app:
+    build:
+      context: .
+    ports:
+      - "3000:8000"
+    volumes:
+      - .:/var/www/html
+      - vendor_cache:/var/www/html/vendor
+      - node_modules_cache:/var/www/html/node_modules
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_KEY=base64:$(php -r "echo base64_encode(random_bytes(32));")
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=laravel_development
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=null
+      - REDIS_PORT=6379
+      - MAIL_MAILER=log
+    depends_on:
+      - db
+      - redis
+    networks:
+      - laravel_network
+    restart: unless-stopped
+    command: php artisan serve --host=0.0.0.0 --port=8000
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: laravel_development
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    ports:
+      - "5433:5432"
+    networks:
+      - laravel_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - laravel_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  queue:
+    build:
+      context: .
+    command: php artisan queue:work --verbose --tries=3 --timeout=90
+    volumes:
+      - .:/var/www/html
+      - vendor_cache:/var/www/html/vendor
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=laravel_development
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=null
+      - REDIS_PORT=6379
+    depends_on:
+      - db
+      - redis
+      - app
+    networks:
+      - laravel_network
+    restart: unless-stopped
+
+  scheduler:
+    build:
+      context: .
+    command: php artisan schedule:work
+    volumes:
+      - .:/var/www/html
+      - vendor_cache:/var/www/html/vendor
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=laravel_development
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=password
+      - CACHE_DRIVER=redis
+      - SESSION_DRIVER=redis
+      - QUEUE_CONNECTION=redis
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=null
+      - REDIS_PORT=6379
+    depends_on:
+      - db
+      - redis
+      - app
+    networks:
+      - laravel_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  vendor_cache:
+  node_modules_cache:
+
+networks:
+  laravel_network:
+    driver: bridge 

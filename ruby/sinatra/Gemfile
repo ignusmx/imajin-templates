@@ -1,0 +1,75 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+ruby '~> 3.2.0'
+
+# Core framework
+gem 'sinatra', '~> 4.1'
+gem 'sinatra-contrib', '~> 4.1'
+gem 'rackup', '~> 2.1'
+
+# Database
+gem 'sequel', '~> 5.77'
+gem 'pg', '~> 1.5'
+
+# Authentication & Security
+gem 'jwt', '~> 2.8'
+gem 'bcrypt', '~> 3.1'
+gem 'rack-cors', '~> 2.0'
+
+# JSON handling
+gem 'oj', '~> 3.16'
+gem 'multi_json', '~> 1.15'
+
+# Validation
+gem 'dry-validation', '~> 1.10'
+gem 'dry-schema', '~> 1.13'
+
+# Redis (optional)
+gem 'redis', '~> 5.0'
+gem 'connection_pool', '~> 2.4'
+
+# HTTP client
+gem 'faraday', '~> 2.8'
+
+# Environment & Configuration
+gem 'dotenv', '~> 3.0'
+
+# Logging
+gem 'amazing_print', '~> 1.6'
+
+# Performance & Monitoring
+gem 'rack-attack', '~> 6.7'
+gem 'puma', '~> 6.4'
+
+group :development, :test do
+  gem 'rake', '~> 13.0'
+  gem 'rspec', '~> 3.12'
+  gem 'rack-test', '~> 2.1'
+  gem 'factory_bot', '~> 6.4'
+  gem 'faker', '~> 3.2'
+  gem 'database_cleaner-sequel', '~> 2.0'
+  gem 'simplecov', '~> 0.22', require: false
+  gem 'simplecov-lcov', '~> 0.8', require: false
+end
+
+group :development do
+  gem 'rerun', '~> 0.14'
+  gem 'rubocop', '~> 1.60', require: false
+  gem 'rubocop-rspec', '~> 2.26', require: false
+  gem 'rubocop-sequel', '~> 0.3', require: false
+  gem 'brakeman', '~> 6.1', require: false
+  gem 'bundle-audit', '~> 0.1', require: false
+  gem 'overcommit', '~> 0.60', require: false
+  gem 'yard', '~> 0.9', require: false
+end
+
+group :test do
+  gem 'webmock', '~> 3.20'
+  gem 'vcr', '~> 6.2'
+end
+
+group :production do
+  gem 'sentry-ruby', '~> 5.17'
+end 

@@ -1,0 +1,77 @@
+services:
+  api:
+    build: 
+      context: .
+      target: development
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app:cached
+      - bundle_cache:/usr/local/bundle
+    environment:
+      - BUNDLE_PATH=/usr/local/bundle
+      - DATABASE_URL=postgresql://postgres:password@db:5432/sinatra_api_development
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET=development-jwt-secret-change-in-production
+      - RACK_ENV=development
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: sh -c "bundle install && bundle exec rackup --host 0.0.0.0 --port 3000"
+
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: sinatra_api_development
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  test:
+    build: 
+      context: .
+      target: development
+    volumes:
+      - .:/app:cached
+      - bundle_cache:/usr/local/bundle
+    environment:
+      - BUNDLE_PATH=/usr/local/bundle
+      - DATABASE_URL=postgresql://postgres:password@db:5432/sinatra_api_test
+      - REDIS_URL=redis://redis:6379/1
+      - JWT_SECRET=test-jwt-secret
+      - RACK_ENV=test
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: sh -c "bundle install && bundle exec rspec"
+    profiles:
+      - test
+
+volumes:
+  postgres_data:
+  redis_data:
+  bundle_cache: 

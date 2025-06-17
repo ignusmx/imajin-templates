@@ -1,0 +1,133 @@
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Ruby
+*.gem
+*.rbc
+/.config
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/spec/examples.txt
+/test/tmp/
+/test/version_tmp/
+/tmp/
+
+# Documentation
+/.yardoc/
+/_yardoc/
+/doc/
+/rdoc/
+
+# Bundler
+/.bundle/
+/vendor/bundle
+/lib/bundler/man/
+
+# Log files
+*.log
+/log/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+/coverage/
+/.nyc_output
+
+# SimpleCov
+/coverage/
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Database
+*.sqlite3
+*.db
+
+# Temporary files
+tmp/
+temp/
+
+# Node.js (if using for any build tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Docker
+.dockerignore
+
+# Local development
+.overmind.sock
+
+# RSpec
+.rspec_status
+
+# Byebug
+.byebug_history
+
+# Guard
+/Guardfile
+
+# Spring (if used)
+/spring/*.pid
+
+# CTags
+tags
+
+# rbenv
+.ruby-version
+.ruby-gemset
+
+# RVM
+.rvmrc
+
+# ASDF
+.tool-versions
+
+# MacOS
+.AppleDouble
+.LSOverride
+
+# Windows
+*.lnk
+
+# Linux
+*~
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Archive files
+*.tar
+*.tar.gz
+*.zip
+*.rar
+
+# Local configuration
+/config/local.rb
+/config/local.yml 
