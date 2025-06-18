@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+/* Custom styles for Django Docker Template */
+@theme {
+  --color-primary: #667eea;
+  --color-primary-dark: #5a67d8;
+  --font-family-inter: "Inter", sans-serif;
+}
+
+body {
+  font-family: var(--font-family-inter);
+}
+
+/* Custom notification styles */
+.notification {
+  @apply fixed top-5 right-5 px-4 py-3 rounded-lg text-white z-50 font-medium;
+  animation: slideIn 0.3s ease-out;
+}
+
+.notification-info { @apply bg-blue-500; }
+.notification-success { @apply bg-green-500; }
+.notification-warning { @apply bg-yellow-500; }
+.notification-error { @apply bg-red-500; }
+
+@keyframes slideIn {
+  from { 
+    transform: translateX(100%); 
+    opacity: 0; 
+  }
+  to { 
+    transform: translateX(0); 
+    opacity: 1; 
+  }
+}
+
+/* Custom button styles */
+.btn {
+  @apply px-6 py-3 rounded-lg font-semibold text-base transition-all duration-300 border-none cursor-pointer inline-block;
+}
+
+.btn-primary {
+  @apply bg-white text-primary hover:bg-gray-50;
+}
+
+.btn-secondary {
+  @apply bg-transparent text-white border-2 border-white hover:bg-white hover:text-primary;
+}
+
+/* Status badge styles */
+.status-badge {
+  @apply inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium;
+}
+
+.status-badge.online {
+  @apply bg-green-100 text-green-600;
+}
+
+.status-badge.warning {
+  @apply bg-yellow-100 text-yellow-600;
+}
+
+/* Container queries for responsive design */
+@container (min-width: 640px) {
+  .grid-responsive {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@container (min-width: 1024px) {
+  .grid-responsive {
+    grid-template-columns: repeat(4, 1fr);
+  }
+} 

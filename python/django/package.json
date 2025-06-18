@@ -1,0 +1,18 @@
+{
+  "name": "django-docker-template",
+  "version": "1.0.0",
+  "description": "Django Docker Template with Tailwind CSS 4+",
+  "private": true,
+  "scripts": {
+    "dev": "tailwindcss --input ./static/css/input.css --output ./static/css/output.css --watch",
+    "build": "tailwindcss --input ./static/css/input.css --output ./static/css/output.css --minify",
+    "watch": "tailwindcss --input ./static/css/input.css --output ./static/css/output.css --watch"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.0.0-alpha.25",
+    "tailwindcss": "^4.0.0-alpha.25"
+  },
+  "dependencies": {
+    "alpinejs": "^3.13.3"
+  }
+} 

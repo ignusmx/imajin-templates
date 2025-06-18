@@ -27,8 +27,15 @@ A curated collection of production-ready starter templates for rapid project dev
   - PHPUnit, Pint, PHPStan
   - Docker support with Xdebug
 
+- **[Python/Django](./python/django/)** - High-performance web framework with robust features
+  - Python 3.11, Django 5.x
+  - PostgreSQL, Redis, Celery ready
+  - Tailwind CSS 4+, Alpine.js
+  - Pytest, Black, Ruff, MyPy
+  - Docker support with uv package management
+  - Django REST Framework included
+
 ### **Coming Soon**
-- **Python/Django** - High-performance web framework with async support
 - **JavaScript/Next.js 15** - React-based full-stack framework with App Router
 - **Go/Gin** - Lightweight, high-performance web framework
 - **Rust/Axum** - Ultra-fast async web framework

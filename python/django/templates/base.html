@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Django Docker Template{% endblock %}</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700" rel="stylesheet" />
+    
+    <!-- Tailwind CSS 4+ -->
+    {% load static %}
+    <link href="{% static 'css/output.css' %}" rel="stylesheet">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="font-inter text-slate-700 bg-slate-50">
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200">
+        <div class="container mx-auto px-6 py-5">
+            <div class="flex justify-between items-center">
+                <a href="{% url 'core:home' %}" class="text-2xl font-bold text-slate-900">
+                    🚀 Django Docker
+                </a>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="{% url 'core:home' %}" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">Home</a>
+                    <a href="{% url 'core:about' %}" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">About</a>
+                    <a href="{% url 'core:dashboard' %}" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">Dashboard</a>
+                    <a href="/api/v1/status/" target="_blank" class="text-slate-600 hover:text-indigo-600 font-medium transition-colors">API</a>
+                </nav>
+                
+                <!-- Mobile menu button -->
+                <button x-data x-on:click="$refs.mobileMenu.classList.toggle('hidden')" class="md:hidden">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Mobile menu -->
+            <nav x-ref="mobileMenu" class="hidden md:hidden mt-4 space-y-2">
+                <a href="{% url 'core:home' %}" class="block py-2 text-slate-600 hover:text-indigo-600">Home</a>
+                <a href="{% url 'core:about' %}" class="block py-2 text-slate-600 hover:text-indigo-600">About</a>
+                <a href="{% url 'core:dashboard' %}" class="block py-2 text-slate-600 hover:text-indigo-600">Dashboard</a>
+                <a href="/api/v1/status/" target="_blank" class="block py-2 text-slate-600 hover:text-indigo-600">API</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-white py-10 mt-20">
+        <div class="container mx-auto px-6 text-center">
+            <div class="flex justify-center space-x-8 mb-5 flex-wrap">
+                <a href="{% url 'core:about' %}" class="text-slate-300 hover:text-white transition-colors">About</a>
+                <a href="/api/v1/status/" target="_blank" class="text-slate-300 hover:text-white transition-colors">API Status</a>
+                <a href="{% url 'core:health' %}" target="_blank" class="text-slate-300 hover:text-white transition-colors">Health Check</a>
+                <a href="https://docs.djangoproject.com/" target="_blank" class="text-slate-300 hover:text-white transition-colors">Documentation</a>
+                <a href="https://github.com" target="_blank" class="text-slate-300 hover:text-white transition-colors">GitHub</a>
+            </div>
+            <p>&copy; {% now "Y" %} Django Docker Template. Built with ❤️ for developers.</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    {% load static %}
+    <script src="{% static 'js/app.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 
