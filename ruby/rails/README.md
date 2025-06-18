@@ -1,340 +1,349 @@
-# Rails 8.0.2 Docker Template
+# Rails Docker Template
 
-A modern, production-ready Rails application template with Docker, PostgreSQL, and Tailwind CSS v4.
+## 🎯 Overview
 
-## 🚀 Features
+A modern, production-ready Rails application template with Docker-first development, PostgreSQL, Redis, and comprehensive tooling. Built for developers who want to go from git clone to running application in under 2 minutes.
 
-- **Rails 8.0.2** - Latest stable Rails version
-- **Ruby 3.2.8** - Modern Ruby version
-- **PostgreSQL 15** - Reliable database
-- **Tailwind CSS v4** - Modern utility-first CSS framework
-- **Docker & Docker Compose** - Containerized development and deployment
-- **Watchman** - Fast file watching for development
-- **Development-optimized** - Hot reloading, file watching, and debugging support
+### Key Features
+
+- **Rails 8.0.2** with Ruby 3.2.8
+- **Docker-first development** with multi-stage builds
+- **PostgreSQL 15** and **Redis 7** with Alpine Linux
+- **Comprehensive testing** with RSpec and Factory Bot
+- **Code quality tools** (Rubocop, Brakeman, Bullet)
+- **Modern tooling** (Tailwind CSS, Background jobs, Health checks)
+- **Production-ready** with security best practices
+- **CI/CD pipeline** with GitHub Actions
 
 ## 📋 Prerequisites
 
-Before you begin, ensure you have the following installed:
+- Docker & Docker Compose
+- Git
 
-- [Docker](https://docs.docker.com/get-docker/) (version 20.10 or higher)
-- [Docker Compose](https://docs.docker.com/compose/install/) (version 2.0 or higher)
-
-## 🛠 Quick Start
-
-### 1. Clone or Use This Template
+## ⚡ Quick Start
 
 ```bash
-# Clone this repository
-git clone <your-repo-url>
-cd rails-docker-template
-
-# Or use as GitHub template
-# Click "Use this template" button on GitHub
+git clone <repository-url>
+cd rails-template
+./scripts/setup.sh
+./scripts/dev.sh
 ```
 
-### 2. Start the Application
+Open http://localhost:3000
+
+## 🔧 Development
+
+### Starting the Application
 
 ```bash
-# Build and start all services
-docker compose up
+# Start all services
+./scripts/dev.sh
 
-# Or run in background
-docker compose up -d
-```
-
-### 3. Access Your Application
-
-- **Web Application**: http://localhost:3000
-- **PostgreSQL Database**: localhost:5432
-
-## 🏗 Project Structure
-
-```
-├── app/                    # Rails application code
-│   ├── assets/
-│   │   ├── stylesheets/   # Traditional CSS files
-│   │   └── tailwind/      # Tailwind CSS source
-│   ├── controllers/
-│   ├── models/
-│   └── views/
-├── bin/                   # Executable scripts
-│   ├── css-watch         # Custom Tailwind watcher script
-│   └── docker-entrypoint # Docker container entrypoint
-├── config/               # Rails configuration
-│   └── database.yml     # Database configuration
-├── db/                   # Database files
-├── Dockerfile           # Docker image definition
-├── docker-compose.yml   # Multi-container Docker application
-├── Gemfile              # Ruby dependencies
-├── Procfile.dev         # Development process configuration
-└── README.md           # This file
-```
-
-## 🐳 Docker Configuration
-
-### Services
-
-- **web**: Rails application server (Puma)
-- **db**: PostgreSQL 15 database
-
-### Environment Variables
-
-The application uses the following environment variables:
-
-- `DATABASE_HOST`: PostgreSQL host (default: `db`)
-- `DATABASE_USERNAME`: Database username (default: `postgres`)
-- `DATABASE_PASSWORD`: Database password (default: `password`)
-- `RAILS_ENV`: Rails environment (default: `development`)
-
-## 💻 Development Commands
-
-### Basic Operations
-
-```bash
-# Start the application
-docker compose up
+# Or manually with docker-compose
+docker-compose up --build
 
 # Start in background
-docker compose up -d
-
-# Stop the application
-docker compose down
+docker-compose up -d
 
 # View logs
-docker compose logs -f web
+docker-compose logs -f app
 ```
 
 ### Database Operations
 
 ```bash
-# Create database
-docker compose run --rm web bin/rails db:create
+# Create and migrate database
+docker-compose run --rm app bin/rails db:create db:migrate
 
-# Run migrations
-docker compose run --rm web bin/rails db:migrate
+# Seed database with sample data
+docker-compose run --rm app bin/rails db:seed
 
-# Seed database
-docker compose run --rm web bin/rails db:seed
+# Reset database (drops, creates, migrates, seeds)  
+docker-compose run --rm app bin/rails db:reset
 
-# Reset database
-docker compose run --rm web bin/rails db:reset
+# Access Rails console
+docker-compose run --rm app bin/rails console
 
-# Open Rails console
-docker compose run --rm web bin/rails console
+# Connect to PostgreSQL directly
+docker-compose exec db psql -U postgres -d app_development
 ```
 
-### Bundle Operations
+### Running Gems and Dependencies
 
 ```bash
-# Install gems
-docker compose run --rm web bundle install
+# Install new gems (after updating Gemfile)
+docker-compose build app
+docker-compose run --rm app bundle install
 
 # Update gems
-docker compose run --rm web bundle update
+docker-compose run --rm app bundle update
 
-# Add a new gem (after updating Gemfile)
-docker compose build web
+# Run Rails generators
+docker-compose run --rm app bin/rails generate controller Pages home
+docker-compose run --rm app bin/rails generate model User name:string email:string
 ```
 
-### Rails Generators
+## 📁 Project Structure
+
+```
+├── app/                    # Rails application code
+│   ├── controllers/        # HTTP request controllers
+│   ├── models/            # Data models and business logic
+│   ├── views/             # HTML templates
+│   ├── services/          # Business logic services
+│   └── jobs/              # Background job classes
+├── config/                # Rails configuration
+│   ├── environments/      # Environment-specific config
+│   └── initializers/      # App initialization code
+├── db/                    # Database files
+│   ├── migrate/           # Database migrations
+│   └── seeds.rb          # Sample data
+├── spec/                  # RSpec tests
+│   ├── factories/         # Test data factories
+│   ├── models/           # Model tests
+│   ├── requests/         # API/controller tests
+│   └── system/           # End-to-end tests
+├── scripts/              # Automation scripts
+│   ├── setup.sh          # Initial setup
+│   ├── dev.sh            # Start development
+│   └── test.sh           # Run test suite
+├── docs/                 # Documentation
+│   ├── DEVELOPMENT.md    # Development guide
+│   ├── DEPLOYMENT.md     # Deployment guide
+│   └── ARCHITECTURE.md   # Architecture decisions
+├── .github/              # GitHub Actions workflows
+│   └── workflows/        # CI/CD pipelines
+├── Dockerfile            # Multi-stage Docker build
+├── docker-compose.yml    # Development services
+└── .env.example         # Environment variables template
+```
+
+## 🛠️ Available Scripts
+
+### Setup and Development
 
 ```bash
-# Generate a controller
-docker compose run --rm web bin/rails generate controller Pages home
-
-# Generate a model
-docker compose run --rm web bin/rails generate model User name:string email:string
-
-# Generate a migration
-docker compose run --rm web bin/rails generate migration AddIndexToUsers email:index
+./scripts/setup.sh    # One-time setup (creates DB, installs deps)
+./scripts/dev.sh      # Start development environment
+./scripts/test.sh     # Run complete test suite
 ```
 
-### Testing
+### Manual Commands
+
+```bash
+# Run tests
+docker-compose run --rm app bundle exec rspec
+docker-compose run --rm app bin/rails test:system
+
+# Code quality
+docker-compose run --rm app bundle exec rubocop
+docker-compose run --rm app bundle exec brakeman
+
+# Background jobs (if using Sidekiq)
+docker-compose run --rm app bundle exec sidekiq
+
+# Asset compilation
+docker-compose run --rm app bin/rails tailwindcss:build
+docker-compose run --rm app bin/rails assets:precompile
+```
+
+## 🧪 Testing
+
+### Running Tests
 
 ```bash
 # Run all tests
-docker compose run --rm web bin/rails test
+./scripts/test.sh
 
-# Run specific test file
-docker compose run --rm web bin/rails test test/models/user_test.rb
+# Run specific test types
+docker-compose run --rm app bundle exec rspec spec/models/
+docker-compose run --rm app bundle exec rspec spec/requests/
+docker-compose run --rm app bin/rails test:system
 
-# Run system tests
-docker compose run --rm web bin/rails test:system
+# Run with coverage
+docker-compose run --rm app bundle exec rspec --format documentation
 ```
 
-## 🎨 Tailwind CSS
+### Test Structure
 
-This template includes Tailwind CSS v4 with automatic building and watching.
+- **Unit Tests**: Models, services, and business logic
+- **Integration Tests**: API endpoints and workflows  
+- **System Tests**: End-to-end user interactions
+- **Security Tests**: Brakeman vulnerability scanning
+- **Performance Tests**: N+1 query detection with Bullet
 
-### Tailwind Configuration
+## 🚀 Deployment
 
-- **Source file**: `app/assets/tailwind/application.css`
-- **Output file**: `app/assets/builds/tailwind.css`
-- **Watcher**: Automatically builds CSS on container start
-
-### Manual Tailwind Commands
+### Production Build
 
 ```bash
-# Build Tailwind CSS
-docker compose run --rm web bin/rails tailwindcss:build
+# Build production image
+docker build -t rails-app:latest --target production .
 
-# Watch for changes (manual)
-docker compose run --rm web bin/rails tailwindcss:watch
-```
-
-## 🗄 Database
-
-### PostgreSQL Configuration
-
-- **Version**: PostgreSQL 15
-- **Host**: `db` (within Docker network)
-- **Port**: 5432
-- **Database**: `app_development`
-- **Username**: `postgres`
-- **Password**: `password`
-
-### Connecting to Database
-
-```bash
-# Using Rails console
-docker compose run --rm web bin/rails console
-
-# Direct PostgreSQL connection
-docker compose exec db psql -U postgres -d app_development
-```
-
-## 🔧 Customization
-
-### Adding New Gems
-
-1. Add gem to `Gemfile`
-2. Rebuild the Docker image:
-   ```bash
-   docker compose build web
+# Run production container
+docker run -p 3000:3000 --env-file .env.production rails-app:latest
    ```
 
 ### Environment Variables
 
-Create a `.env` file in the project root:
+Copy `.env.example` to `.env` and configure:
 
 ```env
-DATABASE_PASSWORD=your_secure_password
+# Database
+DATABASE_URL=postgresql://user:password@host:5432/database
+
+# Redis
+REDIS_URL=redis://host:6379/0
+
+# Security (generate with `rails secret`)
+SECRET_KEY_BASE=your_secret_key
 RAILS_MASTER_KEY=your_master_key
+
+# Application
+RAILS_ENV=production
+APP_HOST=yourdomain.com
 ```
 
-### Custom Scripts
+### Deployment Platforms
 
-Add executable scripts to the `bin/` directory and rebuild the image.
+- **Docker Compose**: See `docs/DEPLOYMENT.md`
+- **Heroku**: Automatic buildpack detection
+- **AWS ECS**: Container orchestration
+- **Google Cloud Run**: Serverless containers
+- **DigitalOcean App Platform**: Managed deployment
 
-## 🚀 Production Deployment
+## 🔧 Configuration
 
-### Building for Production
+### Services
 
-```bash
-# Build production image
-docker build -t your-app:latest .
+- **Web Application**: http://localhost:3000
+- **PostgreSQL Database**: localhost:5432
+- **Redis Cache**: localhost:6379
+- **MailHog (Email Testing)**: http://localhost:8025
 
-# Or use docker-compose with production override
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up
-```
+### Development Tools
 
-### Environment Variables for Production
+- **Hot Reload**: Automatic code reloading
+- **Debugging**: Pry and debugging gems included
+- **File Watching**: Watchman for fast change detection
+- **Email Testing**: MailHog for development emails
 
-Set these environment variables in your production environment:
+## 🏗️ Architecture
 
-- `RAILS_ENV=production`
-- `RAILS_MASTER_KEY=<your-secret-key>`
-- `DATABASE_URL=<your-production-database-url>`
-- `SECRET_KEY_BASE=<your-secret-key-base>`
+### Technology Stack
 
-## 🛠 Troubleshooting
+- **Ruby 3.2.8** - Latest stable Ruby
+- **Rails 8.0.2** - Modern Rails with performance improvements
+- **PostgreSQL 15** - Robust relational database
+- **Redis 7** - Caching and background job queue
+- **Alpine Linux** - Lightweight Docker images
+- **Tailwind CSS** - Utility-first styling
+- **RSpec** - Behavior-driven testing
+- **Docker** - Containerized development and deployment
+
+### Design Patterns
+
+- **Service Objects** - Complex business logic
+- **Repository Pattern** - Data access abstraction
+- **Background Jobs** - Async processing with Sidekiq
+- **Caching Strategy** - Multi-level caching with Redis
+- **Health Checks** - Application and dependency monitoring
+
+## 🔒 Security
+
+### Security Features
+
+- **HTTPS/TLS** - Encrypted communication
+- **CSRF Protection** - Cross-site request forgery prevention
+- **SQL Injection Prevention** - Parameterized queries
+- **XSS Protection** - Content sanitization
+- **Security Headers** - Secure HTTP headers
+- **Dependency Scanning** - Automated vulnerability detection
+
+### Security Tools
+
+- **Brakeman** - Static analysis security scanner
+- **Bundler Audit** - Gem vulnerability checking
+- **Strong Migrations** - Safe database migrations
+- **Content Security Policy** - XSS attack mitigation
+
+## 🚨 Troubleshooting
 
 ### Common Issues
 
-#### Container Won't Start
+**Port Already in Use**
 ```bash
-# Check logs
-docker compose logs web
-
-# Rebuild image
-docker compose build --no-cache web
+# Find and kill process using port 3000
+lsof -i :3000
+kill -9 <PID>
 ```
 
-#### Database Connection Issues
+**Database Connection Issues**
 ```bash
-# Ensure database is running
-docker compose up db
+# Restart database service
+docker-compose restart db
 
-# Check database logs
-docker compose logs db
-
-# Reset database
-docker compose run --rm web bin/rails db:reset
+# Check database status
+docker-compose exec db pg_isready -U postgres
 ```
 
-#### Permission Issues
+**Bundle Install Issues**
 ```bash
-# Fix file permissions
+# Rebuild Docker image
+docker-compose build --no-cache app
+
+# Clear bundle cache
+docker-compose run --rm app bundle install --clean
+```
+
+**Permission Issues**
+```bash
+# Fix file permissions (Linux/macOS)
 sudo chown -R $USER:$USER .
-
-# Rebuild with clean cache
-docker compose build --no-cache
 ```
 
-#### Gem Installation Issues
-```bash
-# Clear bundler cache
-docker compose run --rm web bundle clean --force
+### Getting Help
 
-# Rebuild image
-docker compose build --no-cache web
-```
+1. Check the logs: `docker-compose logs app`
+2. Access container shell: `docker-compose exec app bash`
+3. Review documentation in `docs/` directory
+4. Check GitHub Issues for known problems
 
-### Performance Optimization
+## 📚 Documentation
 
-#### For Development
-- Use Docker volumes for faster file sync
-- Enable BuildKit for faster builds:
-  ```bash
-  export DOCKER_BUILDKIT=1
-  export COMPOSE_DOCKER_CLI_BUILD=1
-  ```
-
-#### For Production
-- Use multi-stage builds
-- Optimize Dockerfile layers
-- Use specific gem versions
-
-## 📚 Additional Resources
-
-- [Rails Guides](https://guides.rubyonrails.org/)
-- [Rails 8.0.2 Release Notes](https://rubyonrails.org/2025/3/12/Rails-Version-8-0-2-has-been-released)
-- [Tailwind CSS v4 Documentation](https://tailwindcss.com/docs)
-- [Docker Documentation](https://docs.docker.com/)
-- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+- [Development Guide](docs/DEVELOPMENT.md) - Detailed development workflow
+- [Deployment Guide](docs/DEPLOYMENT.md) - Production deployment options
+- [Architecture Guide](docs/ARCHITECTURE.md) - Design decisions and patterns
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes following the coding standards
+4. Run the test suite (`./scripts/test.sh`)
+5. Commit your changes (`git commit -m 'Add amazing feature'`)
+6. Push to the branch (`git push origin feature/amazing-feature`)
+7. Open a Pull Request
+
+### Development Standards
+
+- Follow Ruby and Rails best practices
+- Write tests for new functionality
+- Maintain code coverage above 90%
+- Use descriptive commit messages
+- Update documentation for significant changes
 
 ## 📄 License
 
-This project is open source and available under the [MIT License](LICENSE).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🔗 Template Information
+## 🙏 Acknowledgments
 
-- **Rails Version**: 8.0.2
-- **Ruby Version**: 3.2.8
-- **PostgreSQL Version**: 15
-- **Tailwind CSS Version**: 4.x
-- **Docker**: Multi-stage build optimized for development
+- Rails community for the amazing framework
+- Docker team for containerization technology
+- Contributors to all the open-source gems used
+- Alpine Linux for lightweight base images
 
 ---
 
-**Happy coding!** 🎉
-
-For questions or issues, please open an issue in the repository.
+**Built with ❤️ for developers who value quality, security, and developer experience.**

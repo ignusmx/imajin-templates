@@ -21,7 +21,7 @@ A curated collection of production-ready starter templates for rapid project dev
   - JWT authentication ready
 
 - **[PHP/Laravel](./php/laravel/)** - Modern PHP framework with elegant syntax
-  - PHP 8.3, Laravel 11
+  - PHP 8.3, Laravel 12.x
   - PostgreSQL, Redis ready
   - Vite for modern frontend assets
   - PHPUnit, Pint, PHPStan

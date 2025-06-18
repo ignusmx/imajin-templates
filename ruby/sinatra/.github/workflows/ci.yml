@@ -1,0 +1,142 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: sinatra_api_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+          
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 3.2
+        bundler-cache: true
+
+    - name: Set up environment
+      run: |
+        cp env.example .env
+        echo "TEST_DATABASE_URL=postgresql://postgres:password@localhost:5432/sinatra_api_test" >> .env
+        echo "REDIS_URL=redis://localhost:6379/1" >> .env
+        echo "JWT_SECRET=test-jwt-secret-for-ci" >> .env
+        echo "RACK_ENV=test" >> .env
+
+    - name: Create test database
+      run: |
+        RACK_ENV=test bundle exec rake db:create
+        RACK_ENV=test bundle exec rake db:migrate
+      env:
+        DATABASE_URL: postgresql://postgres:password@localhost:5432/sinatra_api_test
+
+    - name: Run tests
+      run: bundle exec rspec --format progress --format RspecJunitFormatter --out tmp/rspec.xml
+      env:
+        DATABASE_URL: postgresql://postgres:password@localhost:5432/sinatra_api_test
+        REDIS_URL: redis://localhost:6379/1
+        JWT_SECRET: test-jwt-secret-for-ci
+        RACK_ENV: test
+
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 3.2
+        bundler-cache: true
+
+    - name: Run RuboCop
+      run: bundle exec rubocop --parallel
+
+    - name: Run Brakeman
+      run: bundle exec brakeman -q -w2
+
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: 3.2
+        bundler-cache: true
+
+    - name: Run bundle audit
+      run: bundle exec bundle-audit check --update
+
+  docker:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build development image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        target: development
+        push: false
+        tags: sinatra-api:dev
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Build production image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        target: production
+        push: false
+        tags: sinatra-api:prod
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Test Docker containers
+      run: |
+        # Test development container
+        docker run --rm sinatra-api:dev bundle exec ruby -e "puts 'Development build successful'"
+        
+        # Test production container
+        docker run --rm sinatra-api:prod bundle exec ruby -e "puts 'Production build successful'" 

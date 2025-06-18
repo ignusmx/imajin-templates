@@ -1,13 +1,15 @@
-# Use official Ruby image
+# Multi-stage Dockerfile for Sinatra API
 FROM ruby:3.2-alpine AS base
 
 # Install system dependencies
 RUN apk add --no-cache \
     build-base \
     postgresql-dev \
-    sqlite-dev \
+    redis \
     tzdata \
-    curl
+    curl \
+    git \
+    bash
 
 # Set working directory
 WORKDIR /app
@@ -15,57 +17,101 @@ WORKDIR /app
 # Install bundler
 RUN gem install bundler
 
-# Copy Gemfile first
-COPY Gemfile ./
+# Development stage
+FROM base AS development
 
-# Generate Gemfile.lock if it doesn't exist, then install gems
-RUN bundle lock --add-platform ruby && \
-    bundle config set --local deployment 'true' && \
-    bundle config set --local without 'development test' && \
-    bundle install
+# Copy Gemfile and Gemfile.lock
+COPY Gemfile Gemfile.lock ./
+
+# Install all gems (including development and test)
+RUN bundle config set --local deployment 'false' && \
+    bundle config set --local without '' && \
+    bundle install --jobs 4 --retry 3
 
 # Copy application code
 COPY . .
 
-# Create non-root user
-RUN addgroup -g 1001 -S ruby && \
-    adduser -S ruby -u 1001 -G ruby
+# Create non-root user for development
+RUN addgroup -g 1001 -S sinatra && \
+    adduser -S sinatra -u 1001 -G sinatra
 
 # Change ownership of app directory
-RUN chown -R ruby:ruby /app
+RUN chown -R sinatra:sinatra /app
 
 # Switch to non-root user
-USER ruby
+USER sinatra
 
 # Expose port
-EXPOSE 4567
+EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:4567/health || exit 1
+    CMD curl -f http://localhost:3000/health || exit 1
 
-# Start the application
-CMD ["bundle", "exec", "rackup", "--host", "0.0.0.0", "--port", "4567"]
+# Start the application with auto-reload for development
+CMD ["bundle", "exec", "rerun", "--", "rackup", "--host", "0.0.0.0", "--port", "3000"]
 
-# Development stage
-FROM base AS development
+# Build stage
+FROM base AS build
 
-# Switch back to root for development dependencies
-USER root
+# Copy Gemfile and Gemfile.lock
+COPY Gemfile Gemfile.lock ./
 
-# Reset bundle config for development
-RUN bundle config unset --local deployment && \
-    bundle config unset --local without && \
-    bundle install
+# Install only production gems
+RUN bundle config set --local deployment 'true' && \
+    bundle config set --local without 'development test' && \
+    bundle install --jobs 4 --retry 3
 
-# Switch back to ruby user
-USER ruby
+# Copy application code
+COPY . .
 
-# Override command for development
-CMD ["bundle", "exec", "rackup", "--host", "0.0.0.0", "--port", "4567"]
+# Clean up unnecessary files
+RUN rm -rf \
+    spec/ \
+    tmp/ \
+    log/* \
+    .git/ \
+    .github/ \
+    docs/ \
+    scripts/ \
+    README.md \
+    .env.example
 
 # Production stage
-FROM base AS production
+FROM ruby:3.2-alpine AS production
 
-# Production is the default stage
+# Install runtime dependencies
+RUN apk add --no-cache \
+    postgresql-client \
+    redis \
+    tzdata \
+    curl \
+    bash
+
+# Set working directory
+WORKDIR /app
+
+# Copy bundler configuration and gems from build stage
+COPY --from=build /usr/local/bundle /usr/local/bundle
+COPY --from=build /app .
+
+# Create non-root user
+RUN addgroup -g 1001 -S sinatra && \
+    adduser -S sinatra -u 1001 -G sinatra
+
+# Create necessary directories
+RUN mkdir -p tmp log && \
+    chown -R sinatra:sinatra /app
+
+# Switch to non-root user
+USER sinatra
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/health || exit 1
+
+# Start the application
 CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"] 
