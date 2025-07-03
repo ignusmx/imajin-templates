@@ -35,8 +35,17 @@ A curated collection of production-ready starter templates for rapid project dev
   - Docker support with uv package management
   - Django REST Framework included
 
+### **Frontend & Full-Stack Frameworks**
+- **[TypeScript/Next.js](./typescript/nextjs/)** - Modern full-stack React framework with Turborepo
+  - Next.js 15 with App Router
+  - TypeScript, React 18+
+  - Turborepo monorepo setup
+  - Multiple apps (web, admin) with shared packages
+  - shadcn/ui components with Storybook
+  - Tailwind CSS, ESLint, Prettier
+  - pnpm package management
+
 ### **Coming Soon**
-- **JavaScript/Next.js 15** - React-based full-stack framework with App Router
 - **Go/Gin** - Lightweight, high-performance web framework
 - **Rust/Axum** - Ultra-fast async web framework
 
