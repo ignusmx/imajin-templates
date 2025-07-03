@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@imajin/ui/components",
+    "utils": "@imajin/ui/lib/utils",
+    "ui": "@imajin/ui/components/ui",
+    "lib": "@imajin/ui/lib",
+    "hooks": "@imajin/ui/hooks"
+  },
+  "iconLibrary": "lucide"
+}
